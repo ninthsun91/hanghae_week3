@@ -1,7 +1,6 @@
 import express from "express";
 import PostSchema from "../schemas/post.js";
 import CommentSchema from "../schemas/comment.js";
-import comment from "../schemas/comment.js";
 
 
 const router = express.Router();
