@@ -83,7 +83,7 @@ router.put("/:_postId", (req, res, next)=>{
     PostSchema
         .updateOne({
             "_id": req.params._postId,
-            "password": { "$eq": doc.password }
+            "password": doc.password,
         }, {"$set": doc})
         .exec((err, result)=>{
             if (err) {
@@ -103,7 +103,7 @@ router.put("/:_postId", (req, res, next)=>{
  router.delete("/:_postId", async(req, res, next)=>{
     const post = await PostSchema.findOneAndDelete({
         "_id": req.params._postId,
-        "password": {"$eq": req.body.password}
+        "password": req.body.password,
     });
 
     if (post === null) {

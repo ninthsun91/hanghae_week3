@@ -114,7 +114,7 @@ router.put("/:_commentId", async(req, res, next)=>{
     try {
         const comment = await CommentSchema.findOne({
                     "_id": commentId,
-                    "password": {"$eq": req.body.password}
+                    "password": req.body.password,
                 });
         if (comment === null) {
             return res.json({ "message": "비밀번호가 틀렸습니다" });
