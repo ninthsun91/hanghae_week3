@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>INDEX</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <h1>INDEX</h1>
+        <button onclick="test()">CREATE COMMENT FOR ALL POST</button>
+        <h3><a href="/posts">POSTS</a></h3>
+        <div id="postList"></div>
+        <script>
+            $(()=>{
+                const postList = getPostList();
+                postList.then(({ data })=>{
+                    for (const post of data) {
+                        $("#postList").append(`
+                            <li>
+                                <a href="/posts/${post.postId}">${post.postId}</a>
+                                <p style="margin:0px 0px 10px 20px"><a href="/comments/${post.postId}">comments</a></p>
+                            </li>                            
+                            `);
+                    }
+                });
+            });
+
+            async function getPostList() {
+                const response = await fetch("/posts")
+                return response.json();
+            }
+
+            async function test() {
+                const postList = await fetch("/test");
+                const postIds = [];
+                const comment = {  
+                    "user": "Developer",  
+                    "password": "1234",  
+                    "content": "안녕하세요 댓글입니다."
+                }
+
+                postList.json().then(async({ postList })=>{
+                    for (const post of postList) {
+                        await $.ajax({
+                            type: "POST",
+                            url: `/comments/${post._id}`,
+                            data: comment,
+                            success: (response)=>{
+                                console.log(response)
+                            }
+                        });
+                    }
+                });
+            }
+
+        </script>
+    </body>
+</html>
