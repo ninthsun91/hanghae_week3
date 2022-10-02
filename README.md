@@ -1,4 +1,9 @@
 
+깃헙에는 MongoDB Atlas로 연결되어있지만, 서버는 local MongoDB에요.
+
+![aws](https://i.imgur.com/paJd9nl.png)
+
+
 ## Why: 과제 제출시에는 아래 질문을 고민해보고 답변을 함께 제출해주세요.
 ### 1. 수정, 삭제 API의 request를 어떤 방식으로 사용하셨나요? (param, query, body)
 #### posts
