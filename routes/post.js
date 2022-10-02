@@ -1,5 +1,7 @@
 import express from "express";
 import PostSchema from "../schemas/post.js";
+import CommentSchema from "../schemas/comment.js";
+import comment from "../schemas/comment.js";
 
 
 const router = express.Router();
@@ -31,7 +33,7 @@ router.get("/", (req, res, next)=>{
  * 게시글 조회
  * 제목, 작성자명, 작성내용, 작성날짜
  */
-router.get("/:_postId", async(req, res, next)=>{
+router.get("/:_postId", (req, res, next)=>{
     PostSchema.findById(req.params._postId)
         .select({
             "_id": 0, "title": 1, "user": 1, "content": 1, "createdAt": 1,
@@ -99,22 +101,24 @@ router.put("/:_postId", (req, res, next)=>{
 /**
  * 비밀번호가 동일할때만 글 삭제
  */
- router.delete("/:_postId", (req, res, next)=>{
-    PostSchema
-        .deleteOne({
-            "_id": req.params._postId,
-            "password": {"$eq": req.body.password}
-        })
-        .exec((err, result)=>{
-            if (err) {
-                return next(err);
-            }
-            if (result.deletedCount === 0) {
-                return res.json({ "message": "비밀번호가 틀렸습니다." });
-            }
+ router.delete("/:_postId", async(req, res, next)=>{
+    const post = await PostSchema.findOneAndDelete({
+        "_id": req.params._postId,
+        "password": {"$eq": req.body.password}
+    });
 
-            res.json({ "message": "게시글을 삭제하였습니다" });
-        });
+    if (post === null) {
+        return res.json({ "message": "비밀번호가 틀렸습니다." });
+    }
+    
+    const commentIds = post.commentIds;
+    if (commentIds.length > 0) {
+        for (const commentId of commentIds) {
+            await CommentSchema.findByIdAndDelete(commentId);
+        }
+    }    
+
+    res.json({ "message": "게시글을 삭제하였습니다" });
 });
 
 
