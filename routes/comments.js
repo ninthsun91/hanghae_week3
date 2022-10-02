@@ -1,4 +1,5 @@
 import express from "express";
+import async from "async";
 import CommentSchema from "../schemas/comment.js";
 import PostSchema from "../schemas/post.js"
 
@@ -111,17 +112,32 @@ router.put("/:_commentId", async(req, res, next)=>{
     const commentId = req.params._commentId;
 
     try {
-        const deleteComment = await CommentSchema
-            .deleteOne({
-                "_id": commentId,
-                "password": {"$eq": req.body.password}
-            });
-
-        if (deleteComment.deletedCount === 0) {
+        const comment = await CommentSchema.findOne({
+                    "_id": commentId,
+                    "password": {"$eq": req.body.password}
+                });
+        if (comment === null) {
             return res.json({ "message": "비밀번호가 틀렸습니다" });
         }
-        
-        res.json({ "message": "댓글을 삭제하였습니다." });
+
+        const postId = comment.postId;
+        async.parallel(
+            {
+                deleteComment: (callback)=>{
+                    CommentSchema.findByIdAndDelete(commentId).exec(callback);
+                },
+                updatePost: (callback)=>{
+                    PostSchema.findByIdAndUpdate(postId, {"$pull": {"commentIds": commentId}}).exec(callback);
+                },
+            },
+            function (err, results) {
+                if (err) {
+                    return next(err);
+                }
+
+                res.json({ "message": "댓글을 삭제하였습니다." });
+            }
+        );      
     } catch (err) {
         console.error(err);
         return next(err);
