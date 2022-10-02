@@ -6,7 +6,8 @@
     </head>
     <body>
         <h1>INDEX</h1>
-        <button onclick="test()">CREATE COMMENT FOR ALL POST</button>
+        <button onclick="createPost()">CREATE POST</button>
+        <button onclick="createComments()">CREATE COMMENT FOR ALL POST</button>
         <h3><a href="/posts">POSTS</a></h3>
         <div id="postList"></div>
         <script>
@@ -29,7 +30,25 @@
                 return response.json();
             }
 
-            async function test() {
+            function createPost() {
+                const post = {  
+                    "user": "Developer",  
+                    "password": "1234",  
+                    "title": "안녕하세요", 
+                    "content": "안녕하세요 content 입니다."
+                };
+                $.ajax({
+                    type: "POST",
+                    url: "/posts",
+                    data: post,
+                    success: (response)=>{
+                        console.log("POST ADDED")
+                        location.reload();
+                    }
+                });
+            }
+
+            async function createComments() {
                 const postList = await fetch("/test");
                 const postIds = [];
                 const comment = {  
