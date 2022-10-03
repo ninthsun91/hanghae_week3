@@ -1,7 +1,7 @@
 import express from "express";
 import async from "async";
-import CommentSchema from "../schemas/comment.js";
-import PostSchema from "../schemas/post.js"
+import CommentModel from "../schemas/comment.js";
+import PostModel from "../schemas/post.js"
 
 
 const router = express.Router();
@@ -16,13 +16,13 @@ router.get("/:_postId", async(req, res, next)=>{
     const postId = req.params._postId;
     
     try {
-        const { commentIds } = await PostSchema
+        const { commentIds } = await PostModel
             .findById(postId)
             .select({"_id": 0, "commentIds": 1});
         
         const data = [];
         for (const commentId of commentIds) {
-            const comment = await CommentSchema
+            const comment = await CommentModel
                 .findById(commentId)
                 .select({ 
                     "commentId": "$_id",
@@ -58,10 +58,10 @@ router.post("/:_postId", async (req, res, next)=>{
     console.log(comment)
     
     try {
-        const createComment = await CommentSchema.create(comment);
+        const createComment = await CommentModel.create(comment);
         const commentId = createComment._id;
 
-        await PostSchema.findByIdAndUpdate(postId, {"$push": {"commentIds": commentId}});
+        await PostModel.findByIdAndUpdate(postId, {"$push": {"commentIds": commentId}});
 
         res.json({ "message": "댓글을 생성하였습니다" });
     } catch (err) {
@@ -87,7 +87,7 @@ router.put("/:_commentId", async(req, res, next)=>{
     }
 
     try {
-        const updateComment = await CommentSchema
+        const updateComment = await CommentModel
             .updateOne({
                 "_id": commentId,
                 "password": {"$eq": comment.password}
@@ -112,7 +112,7 @@ router.put("/:_commentId", async(req, res, next)=>{
     const commentId = req.params._commentId;
 
     try {
-        const comment = await CommentSchema.findOne({
+        const comment = await CommentModel.findOne({
                     "_id": commentId,
                     "password": req.body.password,
                 });
@@ -124,10 +124,10 @@ router.put("/:_commentId", async(req, res, next)=>{
         async.parallel(
             {
                 deleteComment: (callback)=>{
-                    CommentSchema.findByIdAndDelete(commentId).exec(callback);
+                    CommentModel.findByIdAndDelete(commentId).exec(callback);
                 },
                 updatePost: (callback)=>{
-                    PostSchema.findByIdAndUpdate(postId, {"$pull": {"commentIds": commentId}}).exec(callback);
+                    PostModel.findByIdAndUpdate(postId, {"$pull": {"commentIds": commentId}}).exec(callback);
                 },
             },
             function (err, results) {
