@@ -11,20 +11,20 @@ const router = express.Router();
  * 제목, 작성자명, 작성날짜
  * 작성날짜 내림차순
  */
-router.get("/", (req, res, next)=>{
-    PostModel.find()
-        .select({
-            "_id": 0, "title": 1, "user": 1, "createdAt": 1,
-            "postId": "$_id"
-        })
-        .sort({ "createdAt": "desc" })
-        .exec((err, postList)=>{
-            if (err) {
-                return next(err);
-            }
-
-            res.json({ data: postList });
-        });
+router.get("/", async(req, res, next)=>{
+    try {
+        const data = await PostModel
+            .find()
+            .select({
+                "_id": 0, "title": 1, "user": 1, "createdAt": 1,
+                "postId": "$_id"
+            })
+            .sort({ "createdAt": "desc" });
+        
+        res.status(200).json({ data });
+    } catch (error) {
+        return next(error);
+    }
 });
 
 
@@ -32,19 +32,19 @@ router.get("/", (req, res, next)=>{
  * 게시글 조회
  * 제목, 작성자명, 작성내용, 작성날짜
  */
-router.get("/:_postId", async(req, res, next)=>{
-    PostModel.findById(req.params._postId)
+router.get("/:_postId", async (req, res, next)=>{
+    const data = await PostModel
+        .findById(req.params._postId)
         .select({
             "_id": 0, "title": 1, "user": 1, "content": 1, "createdAt": 1,
             "postId": "$_id"
-        })
-        .exec((err, post)=>{
-            if (err) {
-                return next(err);
-            }
-
-            res.json({ data: post });
         });
+    if (data === null) {
+        const error = new Error("BAD REQUEST");
+        res.status(400).json({ "message": error.message });
+    }
+    
+    res.json({ data });
 });
 
 
@@ -52,7 +52,7 @@ router.get("/:_postId", async(req, res, next)=>{
  * 게시글 작성
  * 제목, 작성자명, 비밀번호, 작성내용
  */
-router.post("/", (req, res, next)=>{
+router.post("/", async(req, res, next)=>{
     const doc = {
         user: req.body.user,
         password: req.body.password,
@@ -61,39 +61,36 @@ router.post("/", (req, res, next)=>{
         commentIds: []
     };
     
-    PostModel.create(doc)
-        .catch((err)=>next(err))
-        .then((result)=>{
-            res.json({ "message": "게시글을 생성하였습니다." });
-    });
+    try {
+        await PostModel.create(doc);
+        
+        res.json({ "message": "게시글을 생성하였습니다." });        
+    } catch (error) {
+        return next(error);
+    }    
 });
-
 
 
 /**
  * 비밀번호가 동일할때만 글 수정
  */
-router.put("/:_postId", (req, res, next)=>{
+router.put("/:_postId", async(req, res, next)=>{
     const doc = {
         password: req.body.password,
         title: req.body.title,
         content: req.body.content,
     };
 
-    PostModel
+    const result = await PostModel
         .updateOne({
             "_id": req.params._postId,
             "password": doc.password,
         }, {"$set": doc})
-        .exec((err, result)=>{
-            if (err) {
-                return next(err);
-            }
-            if (result.modifiedCount === 0) {
-                return res.json({ "message": "비밀번호가 틀렸습니다." });
-            }
-            res.json({ "message": "게시글을 수정하였습니다." });
-        });
+        
+    if (result.modifiedCount === 0) {
+        return res.json({ "message": "비밀번호가 틀렸습니다." });
+    }
+    res.json({ "message": "게시글을 수정하였습니다." });
 });
 
 
@@ -141,10 +138,9 @@ router.get("/populate/:_postId", async(req, res, next)=>{
 
         res.json({ post });
     } catch (error) {
-        console.error(error);
         return next(error);
     }    
 });
 
-export default router;
 
+export default router;

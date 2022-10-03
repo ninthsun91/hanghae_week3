@@ -12,6 +12,7 @@ dotenv.config();
 // sign up
 router.post("/signup", (req, res, next)=>{
     const saltRounds = Number(process.env.ROUNDS);
+
     bcrypt.hash(req.body.password, saltRounds, async(err, hash)=>{
         if (err) {
             return res.status(500).json({ "message": "HASHING FAIL" });
