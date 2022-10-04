@@ -3,10 +3,8 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
-import commentRouter from "./routes/comments.js";
 import indexRouter from "./routes/index.js";
-import postRouter from "./routes/post.js";
-import userRouter from "./routes/user.js";
+
 
 dotenv.config();
 
@@ -35,9 +33,6 @@ app.use(express.urlencoded({extended:false}));
 
 // routers
 app.use("/", indexRouter);
-app.use("/comments", commentRouter);
-app.use("/posts", postRouter);
-app.use("/user", userRouter);
 
 // create 404
 app.use((req, res, next)=>{
@@ -64,7 +59,3 @@ mongoose.connect(URL)
             console.log(`Server running on PORT ${PORT}`);
         });
     });
-
-
-
-

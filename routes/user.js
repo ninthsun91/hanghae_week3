@@ -37,32 +37,47 @@ router.post("/signup", (req, res, next)=>{
 
 
 // sign in
-router.post("/signin", async(req, res, next)=>{
-    const { username, password } = req.body;
-    const saltRounds = Number(process.env.ROUNDS);
+import { login } from "../auth/login-refreshtoken.js";
+import { authMiddleware } from "../auth/jwt-middleware.js";
+router.post("/signin", login)
 
-    try {
-        const user = await UserModel.findOne({"username": username})
-        console.log(user);
-    
-        const check = await bcrypt.compare(password, user.password);
-        if (!check) {
-            return res.status(400).json({ "message": "WRONG PASSWORD"});
-        }
+// 클라이언트로부터 받는 헤더
+// {
+//   "Authorizaiton": "Bearer access-token",
+//   "Refresh": "refresh-token"
+// }
 
-        const payload = {
-            username: username,
-        }
-        const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: 60*60 });
+router.get("/refresh")
+// logintoken expired, but refreshtoken valid
+// 클라이언트에서 refresh 재요청
+
+
+// router.post("/signin", async(req, res, next)=>{
+//     const { username, password } = req.body;
+//     const saltRounds = Number(process.env.ROUNDS);
+
+//     try {
+//         const user = await UserModel.findOne({"username": username})
+//         console.log(user);
     
-        res.status(200)
-            .append("token", token)
-            .json({ "message": "SUCCESS" });        
-    } catch (error) {
-        console.error(error);
-        return next(error);
-    }
-});
+//         const check = await bcrypt.compare(password, user.password);
+//         if (!check) {
+//             return res.status(400).json({ "message": "WRONG PASSWORD"});
+//         }
+
+//         const payload = {
+//             username: username,
+//         }
+//         const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: 60*60 });
+    
+//         res.status(200)
+//             .append("token", token)
+//             .json({ "message": "SUCCESS" });        
+//     } catch (error) {
+//         console.error(error);
+//         return next(error);
+//     }
+// });
 
 
 export default router;
