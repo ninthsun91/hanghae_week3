@@ -118,29 +118,4 @@ router.put("/:_postId", async(req, res, next)=>{
 });
 
 
-
-/**
- * populate() 써봅시다
- * post 불러오면서, commentIds > 해당 comment doc 불러오기 * 
- */
-router.get("/populate/:_postId", async(req, res, next)=>{
-    const postId = req.params._postId;
-    try {
-        const post = await PostModel
-            .findById(postId)
-            .select("user title content updatedAt")
-            .populate({
-                path: "commentIds",
-                model: "Comment",
-                select: "user content updatedAt",
-                sort: "desc",
-            });
-
-        res.json({ post });
-    } catch (error) {
-        return next(error);
-    }    
-});
-
-
 export default router;
